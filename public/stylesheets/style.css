@@ -1,0 +1,33 @@
+@import url(http://weloveiconfonts.com/api/?family=entypo);
+
+/* entypo */
+[class*="entypo-"]:before {
+  font-family: 'entypo', sans-serif;
+}
+
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.hint {
+    font-weight: light;
+    background: #def;
+    padding: 3px;
+    border: 1px solid #cdf;
+    border-radius: 3px;
+}
+
+.hint span {
+    padding-left: 5px;
+}
+
+.chart_container {
+    float: left;
+    width: 47%;
+    margin: 0 1% 0 1%;
+}

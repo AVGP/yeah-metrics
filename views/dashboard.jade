@@ -1,0 +1,91 @@
+extends layout
+
+block content
+  h1= title 
+  
+  .chart_container
+    h2 Code style
+    div.entypo-lamp.hint
+      span This value should be as <strong>low</strong> as possible
+    #roodi
+
+  .chart_container
+    h2 Code smells
+    div.entypo-lamp.hint
+      span This value should be as <strong>low</strong> as possible
+    #reek
+
+  .chart_container
+    h2 Coverage (%)
+    div.entypo-lamp.hint
+      span This value should be as <strong>high</strong> as possible
+    #coverage
+
+  .chart_container
+    h2 Code:Test ratio
+    div.entypo-lamp.hint
+      span This value should be <strong>close to 1.0</strong>
+    #code_test_ratio
+
+  script(type="text/javascript")
+    var config = !{config};
+    var Keen=Keen||{configure:function(a,b,c){this._pId=a;this._ak=b;this._op=c},addEvent:function(a,b,c,d){this._eq=this._eq||[];this._eq.push([a,b,c,d])},setGlobalProperties:function(a){this._gp=a},onChartsReady:function(a){this._ocrq=this._ocrq||[];this._ocrq.push(a)}};
+    (function(){var a=document.createElement("script");a.type="text/javascript";a.async=!0;a.src=("https:"==document.location.protocol?"https://":"http://")+"dc8na2hxrj29i.cloudfront.net/code/keen-2.0.0-min.js";var b=document.getElementsByTagName("script")[0];b.parentNode.insertBefore(a,b)})();
+
+    // Configure the Keen object with your Project ID and API Key
+    Keen.configure(config.projectId, config.apiKey);
+    
+    Keen.onChartsReady(function() {
+        var reekData = new Keen.Series("reek", {
+            analysisType: "average",
+            targetProperty: "score",
+            timeframe: "this_week",
+            interval: "daily",
+            timezone: "UTC"
+        });
+
+        reekData.draw(document.getElementById("reek"), {
+            label: "Reek score this week",
+            width: "100%"
+        });
+        
+        var roodiData = new Keen.Series("roodi", {
+            analysisType: "average",
+            targetProperty: "score",
+            timeframe: "this_week",
+            interval: "daily",
+            timezone: "UTC"            
+        });
+
+        roodiData.draw(document.getElementById("roodi"), {
+            label: "Roodi score this week",
+            width: "100%"            
+        });
+        
+        var coverageData = new Keen.Series("coverage", {
+            analysisType: "average",
+            targetProperty: "score",
+            timeframe: "this_week",
+            interval: "daily",
+            timezone: "UTC"
+        });
+
+        coverageData.draw(document.getElementById("coverage"), {
+            label: "Coverage % this week",
+            width: "100%"            
+        });
+        
+        var ratioData = new Keen.Series("code_to_test_ratio", {
+            analysisType: "average",
+            targetProperty: "score",
+            timeframe: "this_week",
+            interval: "daily",
+            timezone: "UTC"
+        });
+
+        ratioData.draw(document.getElementById("code_test_ratio"), {
+            label: "Code-Test ratio",
+            width: "100%"            
+        });
+        
+    });

@@ -1,0 +1,87 @@
+
+/**
+ * Module dependencies.
+ */
+
+var express = require('express')
+  , routes = require('./routes')
+  , user = require('./routes/user')
+  , http = require('http')
+  , path = require('path')
+  , config = require('./config')
+  , db = require("mongojs")(config.MONGO_URL, ["user"]);
+
+var passport = require('passport')
+  , GoogleStrategy = require('passport-google').Strategy;
+
+passport.use(new GoogleStrategy({
+    returnURL: 'http://yeahmetrics.avgp.c9.io/auth/google/return',
+    realm: 'http://yeahmetrics.avgp.c9.io/'
+  },
+  function(identifier, profile, done) {
+    db.user.findAndModify({
+            query: {openId: identifier}, 
+            update: {$set: {openID: identifier, profile: profile }},
+            new: true,
+            upsert: true
+        }, function(err, user) {
+            console.log("FOUND USER: ", user);
+        done(err, user);
+    });
+  }
+));
+
+passport.serializeUser(function(user, done) {
+  done(null, user.openID);
+});
+
+passport.deserializeUser(function(id, done) {
+  db.user.findOne({openID: id}, function (err, user) {
+      console.log("FOUND", user);
+    done(err, user);
+  });
+});
+
+var app = express();
+
+// all environments
+app.set('port', process.env.PORT || 3000);
+app.set('views', __dirname + '/views');
+app.set('view engine', 'jade');
+app.use(express.favicon());
+app.use(express.logger('dev'));
+app.use(express.bodyParser());
+app.use(express.methodOverride());
+  app.use(express.cookieParser('your secret here'));
+  app.use(express.session());
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(app.router);
+app.use(express.static(path.join(__dirname, 'public')));
+
+// development only
+if ('development' == app.get('env')) {
+  app.use(express.errorHandler());
+}
+
+app.get('/', routes.index);
+app.get('/dashboard', user.list(config.KEENIO));
+
+
+
+//Passport
+app.get('/auth/google', passport.authenticate('google'));
+app.get('/auth/google/return', 
+  passport.authenticate('google', { successRedirect: '/dashboard',
+                                    failureRedirect: '/' }));
+app.get('/logout', function(req, res){
+  req.logout();
+  res.redirect('/');
+});
+
+
+
+//Start server
+http.createServer(app).listen(app.get('port') || 8080, function(){
+  console.log('Express server listening on port ' + app.get('port') || 8080);
+});
