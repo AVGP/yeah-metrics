@@ -36,8 +36,8 @@ block content
     Keen.configure(config.projectId, config.apiKey);
 
     Keen.onChartsReady(function() {
-        var endDate = new Date();
-        var startDate = new Date(endDate.getTime() - 1000 * 60 * 60 * 24 * 7);
+        var endDate = new Date(new Date().getTime() + 1000 * 60 * 60 * 24); //the endDate is *excluded*, but we want today to be in the timeframe.
+        var startDate = new Date(endDate.getTime() - 1000 * 60 * 60 * 24 * 8); //this is *excluding* the last day, so we get data for 7 days.
         var chartOptions = {
             analysisType: "average",
             targetProperty: "score",
