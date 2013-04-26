@@ -43,27 +43,32 @@ block content
             targetProperty: "score",
             timeframe: {start: startDate.toISOString(), end: endDate.toISOString()},
             interval: "daily",
-            timezone: "UTC"
+            timezone: "UTC",
+            groupBy: "language"
         };
 
-        var reekData = new Keen.Series("reek", chartOptions);
-        reekData.draw(document.getElementById("reek"), {
-            width: "100%"
+        var smellData = new Keen.Series("code_smells", chartOptions);
+        smellData.draw(document.getElementById("code_smells"), {
+            width: "100%",
+            label "# of code smells"
         });
 
-        var roodiData = new Keen.Series("roodi", chartOptions);
-        roodiData.draw(document.getElementById("roodi"), {
-            width: "100%"
+        var styleData = new Keen.Series("code_style", chartOptions);
+        styleData.draw(document.getElementById("code_style"), {
+            width: "100%",
+            label: "# of style violations"
         });
 
         var coverageData = new Keen.Series("coverage", chartOptions);
         coverageData.draw(document.getElementById("coverage"), {
-            width: "100%"
+            width: "100%",
+            label: "% of coverage"
         });
 
         var ratioData = new Keen.Series("code_to_test_ratio", chartOptions);
         ratioData.draw(document.getElementById("code_test_ratio"), {
-            width: "100%"
+            width: "100%",
+            label: "code:test ratio"
         });
 
     });
