@@ -19,3 +19,9 @@ Then run it with
 
     $ node app.js
 and point your browser to [http://localhost:8080](http://localhost:8080) and you should see the home page of Yeah, Metrics!
+
+## Restricting login to your domain
+If you want to restrict login to users with an email address of your domain, say example.org, you can set this via the config.js:
+
+    exports.RESTRICT_DOMAIN = "example.org";
+This setting allows only users with an "@example.org" email address to login into the application.

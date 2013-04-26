@@ -14,19 +14,38 @@ var express = require('express')
 var passport = require('passport')
   , GoogleStrategy = require('passport-google').Strategy;
 
+
+
+//Passport config
+
 passport.use(new GoogleStrategy({
     returnURL: 'http://yeahmetrics.avgp.c9.io/auth/google/return',
     realm: 'http://yeahmetrics.avgp.c9.io/'
   },
   function(identifier, profile, done) {
+    if(config.RESTRICT_DOMAIN !== undefined) {
+        var validDomain = false;
+        var regex = new RegExp("@" + config.RESTRICT_DOMAIN + "$", "ig");
+        for(var i=0;i<profile.emails.length;i++) {
+            if(regex.test(profile.emails[i].value)) {
+                validDomain = true;
+                break;
+            }
+        }
+        
+        if(!validDomain) {
+            done("Invalid domain", null);
+            return false;
+        }
+    }
+    
     db.user.findAndModify({
             query: {openId: identifier}, 
             update: {$set: {openID: identifier, profile: profile }},
             new: true,
             upsert: true
         }, function(err, user) {
-            console.log("FOUND USER: ", user);
-        done(err, user);
+            done(err, user);
     });
   }
 ));
@@ -37,10 +56,11 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(id, done) {
   db.user.findOne({openID: id}, function (err, user) {
-      console.log("FOUND", user);
     done(err, user);
   });
 });
+
+
 
 var app = express();
 
