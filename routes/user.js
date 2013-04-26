@@ -9,6 +9,6 @@ exports.dashboard = function(config) {
       res.redirect("/auth/google");
       return;
     }
-    res.render('dashboard', { title: 'Dashboard', user: req.user, config: JSON.stringify(config) });
+    res.render('dashboard', { title: 'Dashboard', user: req.user, config: config });
   };
 };
