@@ -32,15 +32,15 @@ passport.use(new GoogleStrategy({
                 break;
             }
         }
-        
+
         if(!validDomain) {
             done("Invalid domain", null);
             return false;
         }
     }
-    
+
     db.user.findAndModify({
-            query: {openId: identifier}, 
+            query: {openId: identifier},
             update: {$set: {openID: identifier, profile: profile }},
             new: true,
             upsert: true
@@ -85,13 +85,13 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
-app.get('/dashboard', user.list(config.KEENIO));
+app.get('/dashboard', user.dashboard(config.KEENIO));
 
 
 
 //Passport
 app.get('/auth/google', passport.authenticate('google'));
-app.get('/auth/google/return', 
+app.get('/auth/google/return',
   passport.authenticate('google', { successRedirect: '/dashboard',
                                     failureRedirect: '/' }));
 app.get('/logout', function(req, res){
