@@ -1,8 +1,8 @@
 extends layout
 
 block content
-  h1= title 
-  
+  h1= title
+
   .chart_container
     h2 Code style
     div.entypo-lamp.hint
@@ -34,58 +34,36 @@ block content
 
     // Configure the Keen object with your Project ID and API Key
     Keen.configure(config.projectId, config.apiKey);
-    
+
     Keen.onChartsReady(function() {
-        var reekData = new Keen.Series("reek", {
+        var endDate = new Date();
+        var startDate = new Date(endDate.getTime() - 1000 * 60 * 60 * 24 * 7);
+        var chartOptions = {
             analysisType: "average",
             targetProperty: "score",
-            timeframe: "this_week",
+            timeframe: {start: startDate.toISOString(), end: endDate.toISOString()},
             interval: "daily",
             timezone: "UTC"
-        });
+        };
 
+        var reekData = new Keen.Series("reek", chartOptions);
         reekData.draw(document.getElementById("reek"), {
-            label: "Reek score this week",
             width: "100%"
         });
-        
-        var roodiData = new Keen.Series("roodi", {
-            analysisType: "average",
-            targetProperty: "score",
-            timeframe: "this_week",
-            interval: "daily",
-            timezone: "UTC"            
-        });
 
+        var roodiData = new Keen.Series("roodi", chartOptions);
         roodiData.draw(document.getElementById("roodi"), {
-            label: "Roodi score this week",
-            width: "100%"            
-        });
-        
-        var coverageData = new Keen.Series("coverage", {
-            analysisType: "average",
-            targetProperty: "score",
-            timeframe: "this_week",
-            interval: "daily",
-            timezone: "UTC"
+            width: "100%"
         });
 
+        var coverageData = new Keen.Series("coverage", chartOptions);
         coverageData.draw(document.getElementById("coverage"), {
-            label: "Coverage % this week",
-            width: "100%"            
-        });
-        
-        var ratioData = new Keen.Series("code_to_test_ratio", {
-            analysisType: "average",
-            targetProperty: "score",
-            timeframe: "this_week",
-            interval: "daily",
-            timezone: "UTC"
+            width: "100%"
         });
 
+        var ratioData = new Keen.Series("code_to_test_ratio", chartOptions);
         ratioData.draw(document.getElementById("code_test_ratio"), {
-            label: "Code-Test ratio",
-            width: "100%"            
+            width: "100%"
         });
-        
+
     });
