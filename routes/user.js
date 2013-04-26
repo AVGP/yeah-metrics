@@ -3,7 +3,7 @@
  * GET users listing.
  */
 
-exports.list = function(config) {
+exports.dashboard = function(config) {
   return function(req, res){
     if(req.user === undefined) {
       res.redirect("/auth/google");

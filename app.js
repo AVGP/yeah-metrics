@@ -85,7 +85,7 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
-app.get('/dashboard', user.list(config.KEENIO));
+app.get('/dashboard', user.dashboard(config.PROJECTS));
 
 
 
