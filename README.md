@@ -25,3 +25,6 @@ If you want to restrict login to users with an email address of your domain, say
 
     exports.RESTRICT_DOMAIN = "example.org";
 This setting allows only users with an "@example.org" email address to login into the application.
+
+## Feeding data into the application
+You'll find the available reporters at the [yeah-metrics-reporters repository](https://github.com/avgp/yeah-metrics-reporters).
