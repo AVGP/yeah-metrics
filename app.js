@@ -9,7 +9,11 @@ var express = require('express')
   , http = require('http')
   , path = require('path')
   , config = require('./config')
-  , db = require("mongojs")(config.MONGO_URL, ["user"]);
+  , db = require("mongojs")(config.MONGO_URL || process.env.MONGO_URL, ["user"]);
+
+if(!config) {
+  config = process.env;
+}
 
 var passport = require('passport')
   , GoogleStrategy = require('passport-google').Strategy;
@@ -19,8 +23,8 @@ var passport = require('passport')
 //Passport config
 
 passport.use(new GoogleStrategy({
-    returnURL: 'http://yeahmetrics.avgp.c9.io/auth/google/return',
-    realm: 'http://yeahmetrics.avgp.c9.io/'
+    returnURL: config.BASE_URL + '/auth/google/return',
+    realm: config.BASE_URL
   },
   function(identifier, profile, done) {
     if(config.RESTRICT_DOMAIN !== undefined) {
