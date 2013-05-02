@@ -8,12 +8,9 @@ var express = require('express')
   , user = require('./routes/user')
   , http = require('http')
   , path = require('path')
-  , config = require('./config')
-  , db = require("mongojs")(config.MONGO_URL || process.env.MONGO_URL, ["user"]);
-
-if(!config) {
-  config = process.env;
-}
+  , config = process.env
+//  , config = require('./config')
+  , db = require("mongojs")(config.MONGO_URL, ["user"]);
 
 var passport = require('passport')
   , GoogleStrategy = require('passport-google').Strategy;
