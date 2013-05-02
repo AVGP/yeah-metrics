@@ -3,19 +3,22 @@
  * Module dependencies.
  */
 
+var fs = require("fs")
+  , config = process.env; // Configuration comes from environment variables by default
+
+if(fs.existsSync('./config.js')) { // if there's a config.js file, use that instead of process.env!
+  config = require('./config');
+}
+
+
 var express = require('express')
   , routes = require('./routes')
   , user = require('./routes/user')
   , http = require('http')
   , path = require('path')
-  , config = process.env
-//  , config = require('./config')
-  , db = require("mongojs")(config.MONGO_URL, ["user"]);
-
-var passport = require('passport')
+  , db = require("mongojs")(config.MONGO_URL, ["user"])
+  , passport = require('passport')
   , GoogleStrategy = require('passport-google').Strategy;
-
-
 
 //Passport config
 
