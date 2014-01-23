@@ -25,6 +25,7 @@ var express = require('express')
 db.user.findOne({}, function(err, user) {
   if(err) {
     console.error('ERROR: could not connect to Mongo');
+    console.log(err);
   } else {
     console.log('Connected to Mongo');
   }
