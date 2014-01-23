@@ -1,6 +1,0 @@
-exports.MONGO_URL = "yeah-metrics:yeah-metrics@dharma.mongohq.com:12345/yeah-metrics";
-exports.KEENIO = {
-  projectId: "",
-  apiKey: ""
-};
-exports.RESTRICT_DOMAIN = "example.com";
