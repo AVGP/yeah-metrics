@@ -22,6 +22,14 @@ var express = require('express')
 
 //Passport config
 
+db.user.findOne({}, function(err, user) {
+  if(err) {
+    console.error('ERROR: could not connect to Mongo');
+  } else {
+    console.log('Connected to Mongo');
+  }
+});
+
 passport.use(new GoogleStrategy({
     returnURL: config.BASE_URL + '/auth/google/return',
     realm: config.BASE_URL
@@ -69,7 +77,7 @@ passport.deserializeUser(function(id, done) {
 var app = express();
 
 // all environments
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 3333);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.favicon());
