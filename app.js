@@ -35,6 +35,8 @@ db.user.findOne({}, function(err, user) {
 switch(config.PASSPORT_STRATEGY) {
     default:
       console.warn('No PASSPORT_STRATEGY provided');
+      config.PASSPORT_STRATEGY = 'google';
+      // Fall through
     case 'google':
       console.log('Using the Google PASSPORT_STRATEGY');
       GoogleStrategy = require('passport-google').Strategy;
