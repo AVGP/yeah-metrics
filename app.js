@@ -2,7 +2,6 @@
 /**
  * Module dependencies.
  */
-
 var fs = require("fs")
   , config = process.env; // Configuration comes from environment variables by default
 
@@ -18,9 +17,11 @@ var express = require('express')
   , path = require('path')
   , db = require("mongojs")(config.MONGO_URL, ["user"])
   , passport = require('passport')
-  , GoogleStrategy = require('passport-google').Strategy;
+;
 
-//Passport config
+
+var app = express();
+var isDevelopment = 'development' == app.get('env');
 
 db.user.findOne({}, function(err, user) {
   if(err) {
@@ -31,37 +32,53 @@ db.user.findOne({}, function(err, user) {
   }
 });
 
-passport.use(new GoogleStrategy({
-    returnURL: config.BASE_URL + '/auth/google/return',
-    realm: config.BASE_URL
-  },
-  function(identifier, profile, done) {
-    if(config.RESTRICT_DOMAIN !== undefined) {
-        var validDomain = false;
-        var regex = new RegExp("@" + config.RESTRICT_DOMAIN + "$", "ig");
-        for(var i=0;i<profile.emails.length;i++) {
-            if(regex.test(profile.emails[i].value)) {
-                validDomain = true;
-                break;
-            }
+switch(config.PASSPORT_STRATEGY) {
+    default:
+      console.warn('No PASSPORT_STRATEGY provided');
+    case 'google':
+      console.log('Using the Google PASSPORT_STRATEGY');
+      GoogleStrategy = require('passport-google').Strategy;
+      passport.use(new GoogleStrategy({
+          returnURL: config.BASE_URL + '/auth/google/return',
+          realm: config.BASE_URL
+        },
+        function(identifier, profile, done) {
+          if(config.RESTRICT_DOMAIN !== undefined) {
+              var validDomain = false;
+              var regex = new RegExp("@" + config.RESTRICT_DOMAIN + "$", "ig");
+              for(var i=0;i<profile.emails.length;i++) {
+                  if(regex.test(profile.emails[i].value)) {
+                      validDomain = true;
+                      break;
+                  }
+              }
+      
+              if(!validDomain) {
+                  done("Invalid domain", null);
+                  return false;
+              }
+          }
+      
+          db.user.findAndModify({
+                  query: {openId: identifier},
+                  update: {$set: {openID: identifier, profile: profile }},
+                  new: true,
+                  upsert: true
+              }, function(err, user) {
+                  done(err, user);
+          });
         }
-
-        if(!validDomain) {
-            done("Invalid domain", null);
-            return false;
-        }
-    }
-
-    db.user.findAndModify({
-            query: {openId: identifier},
-            update: {$set: {openID: identifier, profile: profile }},
-            new: true,
-            upsert: true
-        }, function(err, user) {
-            done(err, user);
-    });
-  }
-));
+      ));
+      break;
+    case 'none':
+      console.log('Using no PASSPORT_STRATEGY - no authentication enabled');
+      if(!isDevelopment) {
+        console.error('PASSPORT_STRATEGY can only be "none" in development mode');
+        process.exit(1);
+      }
+      
+      break;
+}
 
 passport.serializeUser(function(user, done) {
   done(null, user.openID);
@@ -75,7 +92,6 @@ passport.deserializeUser(function(id, done) {
 
 
 
-var app = express();
 
 // all environments
 app.set('port', process.env.PORT || 3333);
@@ -93,12 +109,12 @@ app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // development only
-if ('development' == app.get('env')) {
+if (isDevelopment) {
   app.use(express.errorHandler());
 }
 
 app.get('/', routes.index);
-app.get('/dashboard', user.dashboard(config.KEENIO));
+app.get('/dashboard', user.dashboard(config));
 
 
 
