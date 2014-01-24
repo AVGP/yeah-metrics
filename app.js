@@ -23,20 +23,36 @@ var express = require('express')
 var app = express();
 var isDevelopment = 'development' == app.get('env');
 
-db.user.findOne({}, function(err, user) {
-  if(err) {
-    console.error('ERROR: could not connect to Mongo');
-    console.log(err);
+
+
+function validateConfig(config) {
+  if(!config.KEENIO) {
+    console.warn('No KEENIO supplied');
   } else {
-    console.log('Connected to Mongo');
+    if(!config.KEENIO.projectId) {
+      console.warn('No Keen.io projectId supplied. Did you remember to set KEENIO.proejctId ?');
+    }
+    if(!config.KEENIO.apiKey) {
+      console.warn('No Keen.io apiKey supplied (read key). Did you remember to set KEENIO.apiKey ?');
+    }
   }
-});
+  // Test MongoDB parameters
+  db.user.findOne({}, function(err, user) {
+    if(err) {
+      console.error('ERROR: could not connect to Mongo');
+      console.log(err);
+    } else {
+      console.log('Connected to Mongo');
+    }
+  });
+  
+}
+
+config.PASSPORT_STRATEGY = config.PASSPORT_STRATEGY ? config.PASSPORT_STRATEGY : 'google';  
+validateConfig(config);
+
 
 switch(config.PASSPORT_STRATEGY) {
-    default:
-      console.warn('No PASSPORT_STRATEGY provided');
-      config.PASSPORT_STRATEGY = 'google';
-      // Fall through
     case 'google':
       console.log('Using the Google PASSPORT_STRATEGY');
       GoogleStrategy = require('passport-google').Strategy;
@@ -80,6 +96,10 @@ switch(config.PASSPORT_STRATEGY) {
       }
       
       break;
+    default:
+      console.error('FATAL ERROR: PASSPORT_STRATEGY was not defined');
+      process.exit(2);
+ 
 }
 
 passport.serializeUser(function(user, done) {
