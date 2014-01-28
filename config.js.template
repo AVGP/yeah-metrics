@@ -4,3 +4,14 @@ exports.KEENIO = {
   apiKey: ""
 };
 exports.RESTRICT_DOMAIN = "example.com";
+
+var isHerokuConfigExport = process && process.mainModule && process.mainModule.filename && process.mainModule.filename.indexOf('config.js') !== -1;
+if(isHerokuConfigExport) {
+  console.log('To configure Heroku, run these:');
+  console.log('heroku config:set MONGO_URL=' + exports.MONGO_URL);
+  console.log('heroku config:set KEENIO=\'{"projectId" : "' + exports.KEENIO.projectId + '", "apiKey" : "' + exports.KEENIO.apiKey + '"}\'');
+  console.log('\n\n');
+  console.log('Optional config (you must specify manually) - ');
+  console.log('heroku config:set BASE_URL=http://example.herokuapp.com');
+  console.log('heroku config:set RESTRICT_DOMAIN=example.com');
+}
