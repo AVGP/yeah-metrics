@@ -2,7 +2,6 @@
 /**
  * Module dependencies.
  */
-
 var fs = require("fs")
   , config = process.env; // Configuration comes from environment variables by default
 
@@ -18,41 +17,90 @@ var express = require('express')
   , path = require('path')
   , db = require("mongojs")(config.MONGO_URL, ["user"])
   , passport = require('passport')
-  , GoogleStrategy = require('passport-google').Strategy;
+;
 
-//Passport config
 
-passport.use(new GoogleStrategy({
-    returnURL: config.BASE_URL + '/auth/google/return',
-    realm: config.BASE_URL
-  },
-  function(identifier, profile, done) {
-    if(config.RESTRICT_DOMAIN !== undefined) {
-        var validDomain = false;
-        var regex = new RegExp("@" + config.RESTRICT_DOMAIN + "$", "ig");
-        for(var i=0;i<profile.emails.length;i++) {
-            if(regex.test(profile.emails[i].value)) {
-                validDomain = true;
-                break;
-            }
-        }
+var app = express();
+var isDevelopment = 'development' == app.get('env');
 
-        if(!validDomain) {
-            done("Invalid domain", null);
-            return false;
-        }
+
+
+function validateConfig(config) {
+  if(!config.KEENIO) {
+    console.warn('No KEENIO supplied');
+  } else {
+    if(!config.KEENIO.projectId) {
+      console.warn('No Keen.io projectId supplied. Did you remember to set KEENIO.proejctId ?');
     }
-
-    db.user.findAndModify({
-            query: {openId: identifier},
-            update: {$set: {openID: identifier, profile: profile }},
-            new: true,
-            upsert: true
-        }, function(err, user) {
-            done(err, user);
-    });
+    if(!config.KEENIO.apiKey) {
+      console.warn('No Keen.io apiKey supplied (read key). Did you remember to set KEENIO.apiKey ?');
+    }
   }
-));
+  // Test MongoDB parameters
+  db.user.findOne({}, function(err, user) {
+    if(err) {
+      console.error('ERROR: could not connect to Mongo');
+      console.log(err);
+    } else {
+      console.log('Connected to Mongo');
+    }
+  });
+  
+}
+
+config.PASSPORT_STRATEGY = config.PASSPORT_STRATEGY ? config.PASSPORT_STRATEGY : 'google';  
+validateConfig(config);
+
+
+switch(config.PASSPORT_STRATEGY) {
+    case 'google':
+      console.log('Using the Google PASSPORT_STRATEGY');
+      GoogleStrategy = require('passport-google').Strategy;
+      passport.use(new GoogleStrategy({
+          returnURL: config.BASE_URL + '/auth/google/return',
+          realm: config.BASE_URL
+        },
+        function(identifier, profile, done) {
+          if(config.RESTRICT_DOMAIN !== undefined) {
+              var validDomain = false;
+              var regex = new RegExp("@" + config.RESTRICT_DOMAIN + "$", "ig");
+              for(var i=0;i<profile.emails.length;i++) {
+                  if(regex.test(profile.emails[i].value)) {
+                      validDomain = true;
+                      break;
+                  }
+              }
+      
+              if(!validDomain) {
+                  done("Invalid domain", null);
+                  return false;
+              }
+          }
+      
+          db.user.findAndModify({
+                  query: {openId: identifier},
+                  update: {$set: {openID: identifier, profile: profile }},
+                  new: true,
+                  upsert: true
+              }, function(err, user) {
+                  done(err, user);
+          });
+        }
+      ));
+      break;
+    case 'none':
+      console.log('Using no PASSPORT_STRATEGY - no authentication enabled');
+      if(!isDevelopment) {
+        console.error('PASSPORT_STRATEGY can only be "none" in development mode');
+        process.exit(1);
+      }
+      
+      break;
+    default:
+      console.error('FATAL ERROR: PASSPORT_STRATEGY was not defined');
+      process.exit(2);
+ 
+}
 
 passport.serializeUser(function(user, done) {
   done(null, user.openID);
@@ -66,10 +114,9 @@ passport.deserializeUser(function(id, done) {
 
 
 
-var app = express();
 
 // all environments
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 3333);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
 app.use(express.favicon());
@@ -84,12 +131,12 @@ app.use(app.router);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // development only
-if ('development' == app.get('env')) {
+if (isDevelopment) {
   app.use(express.errorHandler());
 }
 
 app.get('/', routes.index);
-app.get('/dashboard', user.dashboard(config.KEENIO));
+app.get('/dashboard', user.dashboard(config));
 
 
 
